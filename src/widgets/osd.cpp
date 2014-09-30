@@ -26,6 +26,7 @@
 
 #ifdef HAVE_DBUS
 #include "dbus/notification.h"
+#include "dbus/mpris2.h"
 #endif
 
 #include <QCoreApplication>
@@ -235,6 +236,8 @@ void OSD::ShowMessage(const QString& summary, const QString& message,
 
 #ifndef HAVE_DBUS
 void OSD::CallFinished(QDBusPendingCallWatcher*) {}
+void NotificationClosed(uint id, uint reason) {}
+void NotificationAction(uint id, QString reason) {}
 #endif
 
 #ifdef HAVE_WIIMOTEDEV
