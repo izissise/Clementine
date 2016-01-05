@@ -132,6 +132,8 @@ signals:
 
  protected:
   Application* app_;
+  QUrl selected_song_url_;
+
 
  private:
   InternetModel* model_;
