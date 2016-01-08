@@ -100,6 +100,7 @@ signals:
   void AppendToPlaylist();
   void ReplacePlaylist();
   void OpenInNewPlaylist();
+  virtual void CopySelectedPlayableItemURL() const;
 
  protected:
   // Returns all the playlist insertion related QActions (see below).
@@ -111,6 +112,8 @@ signals:
   QAction* GetReplacePlaylistAction();
   // Returns the 'open in new playlist' QAction.
   QAction* GetOpenInNewPlaylistAction();
+  // Return the 'copy selected song' QAction.
+  QAction* GetCopySelectedPlayableItemURLAction();
 
   // Describes how songs should be added to playlist.
   enum AddMode {
@@ -133,6 +136,7 @@ signals:
 
  protected:
   Application* app_;
+  QUrl selected_playable_item_url_;
   QUrl selected_song_url_;
 
 
@@ -143,6 +147,7 @@ signals:
   Lazy<QAction> append_to_playlist_;
   Lazy<QAction> replace_playlist_;
   Lazy<QAction> open_in_new_playlist_;
+  Lazy<QAction> copy_selected_playable_item_url_;
   Lazy<QAction> separator_;
 };
 
