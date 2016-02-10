@@ -380,11 +380,11 @@ void SoundCloudService::EnsureMenuCreated() {
     context_menu_->addAction(IconLoader::Load("download", IconLoader::Base),
                              tr("Open %1 in browser").arg("soundcloud.com"),
                              this, SLOT(Homepage()));
+    context_menu_->addAction(GetCopySelectedPlayableItemURLAction());
     context_menu_->addSeparator();
     context_menu_->addAction(IconLoader::Load("configure", IconLoader::Base),
                              tr("Configure SoundCloud..."),
                              this, SLOT(ShowConfig()));
-
     song_context_menu_ = new QMenu;
     song_context_menu_->addActions(GetPlaylistActions());
     song_context_menu_->addSeparator();
@@ -401,14 +401,20 @@ void SoundCloudService::ShowContextMenu(const QPoint& global_pos) {
   EnsureMenuCreated();
   QStandardItem* item = model()->itemFromIndex(model()->current_index());
 
+  bool can_play = false;
+
   if (item) {
     int type = item->data(InternetModel::Role_Type).toInt();
     if (type == InternetModel::Type_Track) {
-      selected_song_url_ = item->data(InternetModel::Role_Url).toUrl();
-      song_context_menu_->popup(global_pos);
-      return;
+      can_play = true;
+      selected_playable_item_url_ = item->data(InternetModel::Role_Url).toUrl();
     }
   }
+
+  GetAppendToPlaylistAction()->setEnabled(can_play);
+  GetReplacePlaylistAction()->setEnabled(can_play);
+  GetOpenInNewPlaylistAction()->setEnabled(can_play);
+  GetCopySelectedPlayableItemURLAction()->setEnabled(can_play);
 
   context_menu_->popup(global_pos);
 }
@@ -491,7 +497,7 @@ void SoundCloudService::PlaylistRetrieved(QNetworkReply* reply,
 }
 
 void SoundCloudService::GetSelectedSongUrl() const {
-  QString url = selected_song_url_.toEncoded();
+  QString url = selected_playable_item_url_.toEncoded();
   url.remove(QRegExp("\\/stream(.*)$"));
   url.prepend("https://w.soundcloud.com/player/?url=");
   InternetService::ShowUrlBox(tr("SoundCloud track's URL"), url);
