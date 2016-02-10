@@ -78,7 +78,6 @@ SoundCloudService::SoundCloudService(Application* app, InternetModel* parent)
       user_favorites_(nullptr),
       network_(new NetworkAccessManager(this)),
       context_menu_(nullptr),
-      song_context_menu_(nullptr),
       search_box_(new SearchBoxWidget(this)),
       search_delay_(new QTimer(this)),
       next_pending_search_id_(0) {
@@ -496,10 +495,14 @@ void SoundCloudService::PlaylistRetrieved(QNetworkReply* reply,
   }
 }
 
-void SoundCloudService::GetSelectedSongUrl() const {
+void SoundCloudService::CopySelectedPlayableItemURL() const {
   QString url = selected_playable_item_url_.toEncoded();
+  QString new_url = "https://w.soundcloud.com/player/?url=";
+
   url.remove(QRegExp("\\/stream(.*)$"));
-  url.prepend("https://w.soundcloud.com/player/?url=");
+  url.prepend(new_url);
+
+  qLog(Debug) << "Processed SoundCloud track URL: " << new_url;
   InternetService::ShowUrlBox(tr("SoundCloud track's URL"), url);
 }
 
