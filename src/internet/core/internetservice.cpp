@@ -58,9 +58,9 @@ InternetService::InternetService(const QString& name, Application* app,
         return action;
       }),
       open_in_new_playlist_([&]() {
-        QAction* action =
-            new QAction(IconLoader::Load("document-new", IconLoader::Base),
-                        tr("Open in new playlist"), nullptr);
+        QAction* action = new QAction(
+            IconLoader::Load("document-new", IconLoader::Base),
+            tr("Open in new playlist"), nullptr);
         connect(action, SIGNAL(triggered()), this, SLOT(OpenInNewPlaylist()));
         return action;
       }),
