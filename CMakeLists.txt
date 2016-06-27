@@ -370,9 +370,6 @@ else (USE_SYSTEM_QXT)
   endif (NOT APPLE)
 endif (USE_SYSTEM_QXT)
 
-find_path(ECHONEST5_INCLUDE_DIRS Artist.h PATH_SUFFIXES echonest5 echonest)
-find_library(ECHONEST5_LIBRARIES echonest5)
-
 # Use system gmock if it's available
 # We need to look for both gmock and gtest
 find_path(GMOCK_INCLUDE_DIRS gmock/gmock.h)

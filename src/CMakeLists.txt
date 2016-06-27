@@ -29,7 +29,7 @@ include_directories(${LIBPROJECTM_INCLUDE_DIRS})
 include_directories(${QTSINGLEAPPLICATION_INCLUDE_DIRS})
 include_directories(${QTIOCOMPRESSOR_INCLUDE_DIRS})
 include_directories(${QXT_INCLUDE_DIRS})
-include_directories(${ECHONEST5_INCLUDE_DIRS})
+
 include_directories(${SHA2_INCLUDE_DIRS})
 include_directories(${CHROMAPRINT_INCLUDE_DIRS})
 include_directories(${MYGPOQT5_INCLUDE_DIRS})
@@ -295,7 +295,6 @@ set(SOURCES
   songinfo/artistinfoview.cpp
   songinfo/collapsibleinfoheader.cpp
   songinfo/collapsibleinfopane.cpp
-  songinfo/echonestbiographies.cpp
   songinfo/songinfobase.cpp
   songinfo/songinfofetcher.cpp
   songinfo/songinfoprovider.cpp
@@ -587,7 +586,6 @@ set(HEADERS
   songinfo/artistinfoview.h
   songinfo/collapsibleinfoheader.h
   songinfo/collapsibleinfopane.h
-  songinfo/echonestbiographies.h
   songinfo/songinfobase.h
   songinfo/songinfofetcher.h
   songinfo/songinfoprovider.h
@@ -824,16 +822,12 @@ optional_source(HAVE_LIBLASTFM
     internet/lastfm/lastfmcompat.cpp
     internet/lastfm/lastfmservice.cpp
     internet/lastfm/lastfmsettingspage.cpp
-    songinfo/echonestsimilarartists.cpp
-    songinfo/echonesttags.cpp
     songinfo/lastfmtrackinfoprovider.cpp
     songinfo/tagwidget.cpp
   HEADERS
     covers/lastfmcoverprovider.h
     internet/lastfm/lastfmservice.h
     internet/lastfm/lastfmsettingspage.h
-    songinfo/echonestsimilarartists.h
-    songinfo/echonesttags.h
     songinfo/lastfmtrackinfoprovider.h
     songinfo/tagwidget.h
   UI
@@ -1250,7 +1244,6 @@ target_link_libraries(clementine_lib
   ${TAGLIB_LIBRARIES}
   ${MYGPOQT5_LIBRARIES}
   ${CHROMAPRINT_LIBRARIES}
-  ${ECHONEST5_LIBRARIES}
   ${GOBJECT_LIBRARIES}
   ${GLIB_LIBRARIES}
   ${GIO_LIBRARIES}
