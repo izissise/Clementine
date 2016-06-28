@@ -292,6 +292,7 @@ set(SOURCES
   smartplaylists/wizard.cpp
   smartplaylists/wizardplugin.cpp
 
+  songinfo/artistbiography.cpp
   songinfo/artistinfoview.cpp
   songinfo/collapsibleinfoheader.cpp
   songinfo/collapsibleinfopane.cpp
@@ -583,6 +584,7 @@ set(HEADERS
   smartplaylists/wizard.h
   smartplaylists/wizardplugin.h
 
+  songinfo/artistbiography.h
   songinfo/artistinfoview.h
   songinfo/collapsibleinfoheader.h
   songinfo/collapsibleinfopane.h
