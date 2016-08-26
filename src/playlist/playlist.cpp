@@ -1416,6 +1416,8 @@ void Playlist::sort(int column, Qt::SortOrder order) {
 
   undo_stack_->push(
       new PlaylistUndoCommands::SortItems(this, column, order, new_items));
+
+  ReshuffleIndices();
 }
 
 void Playlist::ReOrderWithoutUndo(const PlaylistItemList& new_items) {
