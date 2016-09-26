@@ -4,6 +4,7 @@
    Copyright 2011, Paweł Bara <keirangtp@gmail.com>
    Copyright 2012, 2014, John Maguire <john.maguire@gmail.com>
    Copyright 2014, Krzysztof Sobiecki <sobkas@gmail.com>
+   Copyright 2016, David Ó Laıġeanáın <david.lynam@redbrick.dcu.ie>
 
    Clementine is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -94,7 +95,7 @@ void SomaFMServiceBase::LazyPopulate(QStandardItem* item) {
   }
 }
 
-void SomaFMServiceBase::ShowContextMenu(const QPoint& global_pos) {
+void SomaFMServiceBase::EnsureMenuCreated() {
   if (!context_menu_) {
     context_menu_ = new QMenu;
     context_menu_->addActions(GetPlaylistActions());
@@ -102,17 +103,57 @@ void SomaFMServiceBase::ShowContextMenu(const QPoint& global_pos) {
                              tr("Open %1 in browser").arg(homepage_url_.host()),
                              this, SLOT(Homepage()));
 
-    if (!donate_page_url_.isEmpty()) {
-      context_menu_->addAction(IconLoader::Load("download", IconLoader::Base), 
-                               tr("Donate"), this, SLOT(Donate()));
-    }
-
     context_menu_->addAction(IconLoader::Load("view-refresh",  IconLoader::Base),
                              tr("Refresh channels"), this,
                              SLOT(ForceRefreshStreams()));
+    context_menu_->addAction(GetCopySelectedPlayableItemURLAction());
+
+    if (!donate_page_url_.isEmpty()) {
+      context_menu_->addAction(IconLoader::Load("download", IconLoader::Base),
+                               tr("Donate"), this, SLOT(Donate()));
+
+      context_menu_->addSeparator();
+      context_menu_->addAction(IconLoader::Load("download", IconLoader::Base),
+                                                        tr("Donate"), this, SLOT(Donate()));
+    }
+
+  }
+}
+
+void SomaFMServiceBase::ShowContextMenu(const QPoint& global_pos) {
+  EnsureMenuCreated();
+  QStandardItem* item = model()->itemFromIndex(model()->current_index());
+
+  bool can_play = false;
+
+  if (item) {
+    int type = item->data(InternetModel::Role_Type).toInt();
+
+    // SomaFM streams have a Role_Type of 0.
+    if (type == 0) {
+      can_play = true;
+      selected_playable_item_url_ = item->data(InternetModel::Role_Url).toUrl();
+    }
   }
 
+  GetAppendToPlaylistAction()->setEnabled(can_play);
+  GetReplacePlaylistAction()->setEnabled(can_play);
+  GetOpenInNewPlaylistAction()->setEnabled(can_play);
+  GetCopySelectedPlayableItemURLAction()->setEnabled(can_play);
+
   context_menu_->popup(global_pos);
+}
+
+void SomaFMServiceBase::CopySelectedPlayableItemURL() const {
+  QString url = selected_playable_item_url_.toEncoded();
+  QString new_url = "https://somafm.com/player/#/now-playing/";
+
+  url.remove(QRegExp("^(.*)\\.com\\/"));
+  url.remove(QRegExp("\\.pls$"));
+  new_url.append(url);
+
+  qLog(Debug) << "Processed SomaFM channel URL: " << new_url;
+  InternetService::ShowUrlBox(tr("SomaFM channel's URL"), new_url);
 }
 
 void SomaFMServiceBase::ForceRefreshStreams() {
@@ -235,9 +276,13 @@ void SomaFMServiceBase::PopulateStreams() {
     QStandardItem* item =
         new QStandardItem(IconLoader::Load("icon_radio", IconLoader::Lastfm), 
                           QString());
+    Song stream_song = stream.ToSong(name_);
+
     item->setText(stream.title_);
-    item->setData(QVariant::fromValue(stream.ToSong(name_)),
+    item->setData(QVariant::fromValue(stream_song),
                   InternetModel::Role_SongMetadata);
+    item->setData(stream_song.url(),
+                  InternetModel::Role_Url);
     item->setData(InternetModel::PlayBehaviour_SingleItem,
                   InternetModel::Role_PlayBehaviour);
 

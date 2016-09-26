@@ -5,6 +5,7 @@
    Copyright 2012, Arnaud Bienner <arnaud.bienner@gmail.com>
    Copyright 2014, John Maguire <john.maguire@gmail.com>
    Copyright 2014, Krzysztof Sobiecki <sobkas@gmail.com>
+   Copyright 2016, David Ó Laıġeanáın <david.lynam@redbrick.dcu.ie>
 
    Clementine is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -57,10 +58,17 @@ InternetService::InternetService(const QString& name, Application* app,
         return action;
       }),
       open_in_new_playlist_([&]() {
-        QAction* action =
-            new QAction(IconLoader::Load("document-new", IconLoader::Base),
-                        tr("Open in new playlist"), nullptr);
+        QAction* action = new QAction(
+            IconLoader::Load("document-new", IconLoader::Base),
+            tr("Open in new playlist"), nullptr);
         connect(action, SIGNAL(triggered()), this, SLOT(OpenInNewPlaylist()));
+        return action;
+      }),
+      copy_selected_playable_item_url_([&]() {
+        QAction* action = new QAction(
+            IconLoader::Load("edit-copy", IconLoader::Base),
+            tr("Copy URL to clipboard"), nullptr);
+        connect(action, SIGNAL(triggered()), this, SLOT(CopySelectedPlayableItemURL()));
         return action;
       }),
       separator_([]() {
@@ -103,6 +111,10 @@ QAction* InternetService::GetOpenInNewPlaylistAction() {
   return open_in_new_playlist_.get();
 }
 
+QAction* InternetService::GetCopySelectedPlayableItemURLAction() {
+  return copy_selected_playable_item_url_.get();
+}
+
 void InternetService::AddItemToPlaylist(const QModelIndex& index,
                                         AddMode add_mode) {
   AddItemsToPlaylist(QModelIndexList() << index, add_mode);
@@ -129,6 +141,15 @@ void InternetService::ReplacePlaylist() {
 
 void InternetService::OpenInNewPlaylist() {
   AddItemsToPlaylist(model()->selected_indexes(), AddMode_OpenInNew);
+}
+
+void InternetService::CopySelectedPlayableItemURL() const {
+  if (selected_playable_item_url_.isEmpty()) return;
+
+  QString url = selected_playable_item_url_.toEncoded();
+
+  qLog(Debug) << "Playable item URL: " << url;
+  ShowUrlBox(tr("Copy URL"), url);
 }
 
 QStandardItem* InternetService::CreateSongItem(const Song& song) {

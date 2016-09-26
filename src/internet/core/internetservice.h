@@ -5,6 +5,7 @@
    Copyright 2011, Tyler Rhodes <tyler.s.rhodes@gmail.com>
    Copyright 2011, Paweł Bara <keirangtp@gmail.com>
    Copyright 2014, Krzysztof Sobiecki <sobkas@gmail.com>
+   Copyright 2016, David Ó Laıġeanáın <david.lynam@redbrick.dcu.ie>
 
    Clementine is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -99,6 +100,7 @@ signals:
   void AppendToPlaylist();
   void ReplacePlaylist();
   void OpenInNewPlaylist();
+  virtual void CopySelectedPlayableItemURL() const;
 
  protected:
   // Returns all the playlist insertion related QActions (see below).
@@ -110,6 +112,8 @@ signals:
   QAction* GetReplacePlaylistAction();
   // Returns the 'open in new playlist' QAction.
   QAction* GetOpenInNewPlaylistAction();
+  // Return the 'copy selected song' QAction.
+  QAction* GetCopySelectedPlayableItemURLAction();
 
   // Describes how songs should be added to playlist.
   enum AddMode {
@@ -132,6 +136,7 @@ signals:
 
  protected:
   Application* app_;
+  QUrl selected_playable_item_url_;
 
  private:
   InternetModel* model_;
@@ -140,6 +145,7 @@ signals:
   Lazy<QAction> append_to_playlist_;
   Lazy<QAction> replace_playlist_;
   Lazy<QAction> open_in_new_playlist_;
+  Lazy<QAction> copy_selected_playable_item_url_;
   Lazy<QAction> separator_;
 };
 

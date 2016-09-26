@@ -3,6 +3,7 @@
    Copyright 2014, maximko <me@maximko.org>
    Copyright 2014, Krzysztof Sobiecki <sobkas@gmail.com>
    Copyright 2014, John Maguire <john.maguire@gmail.com>
+   Copyright 2016, David Ó Laıġeanáın <david.lynam@redbrick.dcu.ie>
 
    Clementine is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -376,6 +377,7 @@ void SoundCloudService::EnsureMenuCreated() {
     context_menu_->addAction(IconLoader::Load("download", IconLoader::Base),
                              tr("Open %1 in browser").arg("soundcloud.com"),
                              this, SLOT(Homepage()));
+    context_menu_->addAction(GetCopySelectedPlayableItemURLAction());
     context_menu_->addSeparator();
     context_menu_->addAction(IconLoader::Load("configure", IconLoader::Base),
                              tr("Configure SoundCloud..."),
@@ -385,6 +387,22 @@ void SoundCloudService::EnsureMenuCreated() {
 
 void SoundCloudService::ShowContextMenu(const QPoint& global_pos) {
   EnsureMenuCreated();
+  QStandardItem* item = model()->itemFromIndex(model()->current_index());
+
+  bool can_play = false;
+
+  if (item) {
+    int type = item->data(InternetModel::Role_Type).toInt();
+    if (type == InternetModel::Type_Track) {
+      can_play = true;
+      selected_playable_item_url_ = item->data(InternetModel::Role_Url).toUrl();
+    }
+  }
+
+  GetAppendToPlaylistAction()->setEnabled(can_play);
+  GetReplacePlaylistAction()->setEnabled(can_play);
+  GetOpenInNewPlaylistAction()->setEnabled(can_play);
+  GetCopySelectedPlayableItemURLAction()->setEnabled(can_play);
 
   context_menu_->popup(global_pos);
 }
@@ -461,6 +479,17 @@ void SoundCloudService::PlaylistRetrieved(QNetworkReply* reply,
     QStandardItem* child = CreateSongItem(song);
     playlist_info.item_->appendRow(child);
   }
+}
+
+void SoundCloudService::CopySelectedPlayableItemURL() const {
+  QString url = selected_playable_item_url_.toEncoded();
+  QString new_url = "https://w.soundcloud.com/player/?url=";
+
+  url.remove(QRegExp("\\/stream(.*)$"));
+  url.prepend(new_url);
+
+  qLog(Debug) << "Processed SoundCloud track URL: " << url;
+  InternetService::ShowUrlBox(tr("SoundCloud track's URL"), url);
 }
 
 QList<QStandardItem*> SoundCloudService::ExtractActivities(const QVariant& result) {

@@ -3,6 +3,7 @@
    Copyright 2011-2012, 2014, John Maguire <john.maguire@gmail.com>
    Copyright 2014, Arnaud Bienner <arnaud.bienner@gmail.com>
    Copyright 2014, Krzysztof Sobiecki <sobkas@gmail.com>
+   Copyright 2016, David Ó Laıġeanáın <david.lynam@redbrick.dcu.ie>
 
    Clementine is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -141,6 +142,7 @@ void DigitallyImportedServiceBase::PopulateStreams() {
     item->setData(InternetModel::PlayBehaviour_SingleItem,
                   InternetModel::Role_PlayBehaviour);
     item->setData(QVariant::fromValue(song), InternetModel::Role_SongMetadata);
+    item->setData(song.url(), InternetModel::Role_Url);
     root_->appendRow(item);
   }
 }
@@ -167,7 +169,7 @@ void DigitallyImportedServiceBase::ReloadSettings() {
   saved_channels_.Load();
 }
 
-void DigitallyImportedServiceBase::ShowContextMenu(const QPoint& global_pos) {
+void DigitallyImportedServiceBase::EnsureMenuCreated() {
   if (!context_menu_) {
     context_menu_.reset(new QMenu);
     context_menu_->addActions(GetPlaylistActions());
@@ -181,9 +183,57 @@ void DigitallyImportedServiceBase::ShowContextMenu(const QPoint& global_pos) {
     context_menu_->addAction(IconLoader::Load("configure", IconLoader::Base),
                              tr("Configure..."), this,
                              SLOT(ShowSettingsDialog()));
+    context_menu_->addAction(GetCopySelectedPlayableItemURLAction());
+  }
+}
+
+void DigitallyImportedServiceBase::ShowContextMenu(const QPoint& global_pos) {
+  EnsureMenuCreated();
+  QStandardItem* item = model()->itemFromIndex(model()->current_index());
+
+  if (item) {
+    int type = item->data(InternetModel::Role_Type).toInt();
+
+    // Digitally Imported streams have a Role_Type of 0.
+    if (type == 0) {
+      selected_playable_item_url_ = item->data(InternetModel::Role_Url).toUrl();
+      qLog(Debug) << "Selected channel URL: " << item->data(InternetModel::Role_Url).toString();
+
+      GetAppendToPlaylistAction()->setEnabled(true);
+      GetReplacePlaylistAction()->setEnabled(true);
+      GetOpenInNewPlaylistAction()->setEnabled(true);
+      GetCopySelectedPlayableItemURLAction()->setEnabled(true);
+    }
+    else
+    {
+      GetAppendToPlaylistAction()->setEnabled(false);
+      GetReplacePlaylistAction()->setEnabled(false);
+      GetOpenInNewPlaylistAction()->setEnabled(false);
+      GetCopySelectedPlayableItemURLAction()->setEnabled(false);
+    }
   }
 
   context_menu_->popup(global_pos);
+}
+
+void DigitallyImportedServiceBase::CopySelectedPlayableItemURL() const {
+  if (selected_playable_item_url_.isEmpty()) return;
+
+  QString url = selected_playable_item_url_.toEncoded();
+  QString new_url = homepage_url().toString();
+
+  // Get the raw name of the stream with preceding slash.
+  url.remove(QRegExp("[a-z]*:/"));
+
+  // Trim slash from end of service base URL.
+  new_url.remove(QRegExp("/$"));
+
+  // Concatenate them together to get the final, browser-ready URL.
+  new_url.append(url);
+
+  qLog(Debug) << "Processed " << name() << " channel URL: " << new_url;
+
+  DigitallyImportedServiceBase::ShowUrlBox("Copy URL", new_url);
 }
 
 bool DigitallyImportedServiceBase::is_premium_account() const {

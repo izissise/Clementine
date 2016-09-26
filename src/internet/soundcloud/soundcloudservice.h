@@ -2,6 +2,7 @@
    Copyright 2012, 2014, Arnaud Bienner <arnaud.bienner@gmail.com>
    Copyright 2014, Krzysztof Sobiecki <sobkas@gmail.com>
    Copyright 2014, John Maguire <john.maguire@gmail.com>
+   Copyright 2016, David Ó Laıġeanáın <david.lynam@redbrick.dcu.ie>
 
    Clementine is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -69,6 +70,7 @@ class SoundCloudService : public InternetService {
   void UserPlaylistsRetrieved(QNetworkReply* reply);
   void UserFavoritesRetrieved(QNetworkReply* reply);
   void PlaylistRetrieved(QNetworkReply* reply, int request_id);
+  void CopySelectedPlayableItemURL() const;
   void Search(const QString& text, bool now = false);
   void DoSearch();
   void SearchFinished(QNetworkReply* reply, int task);
