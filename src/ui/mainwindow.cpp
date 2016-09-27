@@ -1080,7 +1080,7 @@ void MainWindow::ReloadSettings() {
       PlayBehaviour(s.value("menu_playmode", PlayBehaviour_IfStopped).toInt());
 
   bool show_sidebar = settings_.value("show_sidebar", true).toBool();
-  ui_->sidebar_layout->setShown(show_sidebar);
+  ui_->sidebar_layout->setVisible(show_sidebar);
   ui_->action_toggle_show_sidebar->setChecked(show_sidebar);
 }
 
