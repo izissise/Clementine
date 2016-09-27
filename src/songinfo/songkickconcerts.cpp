@@ -69,8 +69,8 @@ void SongkickConcerts::FetchInfo(int id, const Song& metadata) {
 void SongkickConcerts::ArtistSearchFinished(QNetworkReply* reply, int id) {
   reply->deleteLater();
 
-  QJson::Parser parser;
-  QVariantMap json = parser.parse(reply).toMap();
+  QString string = reply->readAll();
+  QVariantMap json = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
 
   QVariantMap results_page = json["resultsPage"].toMap();
   QVariantMap results = results_page["results"].toMap();

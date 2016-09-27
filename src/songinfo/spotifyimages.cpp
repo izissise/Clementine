@@ -2,7 +2,8 @@
 
 #include <algorithm>
 
-#include <qjson/parser.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include <QPair>
 
@@ -45,8 +46,8 @@ void SpotifyImages::FetchInfo(int id, const Song& metadata) {
   QNetworkReply* reply = network_->get(request);
   NewClosure(reply, SIGNAL(finished()), [this, id, reply]() {
     reply->deleteLater();
-    QJson::Parser parser;
-    QVariantMap result = parser.parse(reply).toMap();
+    QString string = reply->readAll();
+    QVariantMap result = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
     QVariantMap artists = result["artists"].toMap();
     if (artists.isEmpty()) {
       emit Finished(id);
@@ -71,8 +72,8 @@ void SpotifyImages::FetchImagesForArtist(int id, const QString& spotify_id) {
   QNetworkReply* reply = network_->get(request);
   NewClosure(reply, SIGNAL(finished()), [this, id, reply]() {
     reply->deleteLater();
-    QJson::Parser parser;
-    QVariantMap result = parser.parse(reply).toMap();
+    QString string = reply->readAll();
+    QVariantMap result = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
     QVariantList images = result["images"].toList();
     QList<QPair<QUrl, QSize>> image_candidates;
     for (QVariant i : images) {

@@ -19,7 +19,8 @@
 
 #include <QLocale>
 
-#include <qjson/parser.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include "core/closure.h"
 #include "core/latch.h"
@@ -72,8 +73,8 @@ void ArtistBiography::FetchInfo(int id, const Song& metadata) {
   NewClosure(reply, SIGNAL(finished()), [this, reply, id]() {
     reply->deleteLater();
 
-    QJson::Parser parser;
-    QVariantMap response = parser.parse(reply).toMap();
+    QString string = reply->readAll();
+    QVariantMap response = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
 
     QString body = response["articleBody"].toString();
     QString url = response["url"].toString();
@@ -197,8 +198,8 @@ void ArtistBiography::FetchWikipediaImages(int id, const QString& wikipedia_url,
   NewClosure(reply, SIGNAL(finished()), [this, id, reply, language, latch]() {
     reply->deleteLater();
 
-    QJson::Parser parser;
-    QVariantMap response = parser.parse(reply).toMap();
+    QString string = reply->readAll();
+    QVariantMap response = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
 
     QStringList image_titles = ExtractImageTitles(response);
 
@@ -214,8 +215,8 @@ void ArtistBiography::FetchWikipediaImages(int id, const QString& wikipedia_url,
       QNetworkReply* reply = network_->get(request);
       NewClosure(reply, SIGNAL(finished()), [this, id, reply, latch]() {
         reply->deleteLater();
-        QJson::Parser parser;
-        QVariantMap json = parser.parse(reply).toMap();
+        QString string = reply->readAll();
+        QVariantMap json = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
         QUrl url = ExtractImageUrl(json);
         qLog(Debug) << "Found wikipedia image url:" << url;
         if (!url.isEmpty()) {
@@ -254,8 +255,8 @@ void ArtistBiography::FetchWikipediaArticle(int id,
                                          wiki_title, latch]() {
     reply->deleteLater();
 
-    QJson::Parser parser;
-    QVariantMap json = parser.parse(reply).toMap();
+    QString string = reply->readAll();
+    QVariantMap json = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
     QString html = ExtractExtract(json);
 
     CollapsibleInfoPane::Data data;

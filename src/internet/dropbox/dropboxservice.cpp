@@ -22,8 +22,8 @@
 #include <QFileInfo>
 #include <QTimer>
 
-#include <qjson/parser.h>
-#include <qjson/serializer.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include "core/application.h"
 #include "core/logging.h"
@@ -116,20 +116,17 @@ void DropboxService::RequestFileList() {
     request.setRawHeader("Authorization", GenerateAuthorisationHeader());
     request.setRawHeader("Content-Type", "application/json; charset=utf-8");
 
-    QJson::Serializer serializer;
-
-    QNetworkReply* reply = network_->post(request, serializer.serialize(json));
+    QNetworkReply* reply = network_->post(request, QJsonDocument::fromVariant(json).toBinaryData());
     NewClosure(reply, SIGNAL(finished()), this,
                SLOT(RequestFileListFinished(QNetworkReply*)), reply);
   } else {
     QUrl url = QUrl(kListFolderContinueEndpoint);
     QVariantMap json;
     json.insert("cursor", cursor);
-    QJson::Serializer serializer;
     QNetworkRequest request(url);
     request.setRawHeader("Authorization", GenerateAuthorisationHeader());
     request.setRawHeader("Content-Type", "application/json; charset=utf-8");
-    QNetworkReply* reply = network_->post(request, serializer.serialize(json));
+    QNetworkReply* reply = network_->post(request, QJsonDocument::fromVariant(json).toBinaryData());
     NewClosure(reply, SIGNAL(finished()), this,
                SLOT(RequestFileListFinished(QNetworkReply*)), reply);
   }
@@ -138,12 +135,12 @@ void DropboxService::RequestFileList() {
 void DropboxService::RequestFileListFinished(QNetworkReply* reply) {
   reply->deleteLater();
 
-  QJson::Parser parser;
-  QVariantMap response = parser.parse(reply).toMap();
+  QString string = reply->readAll();
+  QVariantMap response = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
 
   QSettings settings;
   settings.beginGroup(kSettingsGroup);
-  settings.setValue("cursor", json_response["cursor"].toString());
+  settings.setValue("cursor", response["cursor"].toString());
 
   QVariantList contents = response["entries"].toList();
   qLog(Debug) << "File list found:" << contents.size();
@@ -201,8 +198,7 @@ void DropboxService::LongPollDelta() {
   json.insert("timeout", 30);
   QNetworkRequest request(request_url);
   request.setRawHeader("Content-Type", "application/json; charset=utf-8");
-  QJson::Serializer serializer;
-  QNetworkReply* reply = network_->post(request, serializer.serialize(json));
+  QNetworkReply* reply = network_->post(request, QJsonDocument::fromVariant(json).toBinaryData());
   NewClosure(reply, SIGNAL(finished()), this,
              SLOT(LongPollFinished(QNetworkReply*)), reply);
 }
@@ -227,18 +223,17 @@ QNetworkReply* DropboxService::FetchContentUrl(const QUrl& url) {
   QUrl request_url(kMediaEndpoint);
   QVariantMap json;
   json.insert("path", url.path());
-  QJson::Serializer serializer;
   QNetworkRequest request(request_url);
   request.setRawHeader("Authorization", GenerateAuthorisationHeader());
   request.setRawHeader("Content-Type", "application/json; charset=utf-8");
-  return network_->post(request, serializer.serialize(json));
+  return network_->post(request, QJsonDocument::fromVariant(json).toBinaryData());
 }
 
 void DropboxService::FetchContentUrlFinished(QNetworkReply* reply,
                                              const QVariantMap& data) {
   reply->deleteLater();
-  QJson::Parser parser;
-  QVariantMap response = parser.parse(reply).toMap();
+  QString string = reply->readAll();
+  QVariantMap response = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
   QFileInfo info(data["path_lower"].toString());
 
   QUrl url;
@@ -263,7 +258,7 @@ QUrl DropboxService::GetStreamingUrlFromSongId(const QUrl& url) {
   QNetworkReply* reply = FetchContentUrl(url);
   WaitForSignal(reply, SIGNAL(finished()));
 
-  QJson::Parser parser;
-  QVariantMap response = parser.parse(reply).toMap();
+  QString string = reply->readAll();
+  QVariantMap response = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
   return QUrl::fromEncoded(response["link"].toByteArray());
 }
