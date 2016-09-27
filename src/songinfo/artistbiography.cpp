@@ -59,8 +59,10 @@ void ArtistBiography::FetchInfo(int id, const Song& metadata) {
   }
 
   QUrl url(kArtistBioUrl);
-  url.addQueryItem("artist", metadata.artist());
-  url.addQueryItem("lang", GetLocale());
+  QUrlQuery q;
+  q.addQueryItem("artist", metadata.artist());
+  q.addQueryItem("lang", GetLocale());
+  url.setQuery(q);
 
   qLog(Debug) << "Biography url: " << url;
 
@@ -184,7 +186,9 @@ void ArtistBiography::FetchWikipediaImages(int id, const QString& wikipedia_url,
   QString wiki_title = QUrl::fromPercentEncoding(regex.cap(2).toUtf8());
   QString language = regex.cap(1);
   QUrl url(QString(kWikipediaImageListUrl).arg(language));
-  url.addQueryItem("titles", wiki_title);
+  QUrlQuery q;
+  q.addQueryItem("titles", wiki_title);
+  url.setQuery(q);
 
   qLog(Debug) << "Wikipedia images:" << url;
 
@@ -201,7 +205,9 @@ void ArtistBiography::FetchWikipediaImages(int id, const QString& wikipedia_url,
     for (const QString& image_title : image_titles) {
       latch->Wait();
       QUrl url(QString(kWikipediaImageInfoUrl).arg(language));
-      url.addQueryItem("titles", image_title);
+      QUrlQuery q;
+      q.addQueryItem("titles", image_title);
+      url.setQuery(q);
       qLog(Debug) << "Image info:" << url;
 
       QNetworkRequest request(url);
@@ -236,7 +242,9 @@ void ArtistBiography::FetchWikipediaArticle(int id,
   QString language = regex.cap(1);
 
   QUrl url(QString(kWikipediaExtractUrl).arg(language));
-  url.addQueryItem("titles", wiki_title);
+  QUrlQuery q;
+  q.addQueryItem("titles", wiki_title);
+  url.setQuery(q);
   QNetworkRequest request(url);
   QNetworkReply* reply = network_->get(request);
 

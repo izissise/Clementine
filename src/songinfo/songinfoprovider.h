@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QUrl>
+#include <QUrlQuery>
 
 #include "collapsibleinfopane.h"
 #include "core/song.h"

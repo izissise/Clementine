@@ -33,9 +33,11 @@ void SpotifyImages::FetchInfo(int id, const Song& metadata) {
 
   // Fetch artist id.
   QUrl search_url(kSpotifySearchUrl);
-  search_url.addQueryItem("q", metadata.artist());
-  search_url.addQueryItem("type", "artist");
-  search_url.addQueryItem("limit", "1");
+  QUrlQuery q;
+  q.addQueryItem("q", metadata.artist());
+  q.addQueryItem("type", "artist");
+  q.addQueryItem("limit", "1");
+  search_url.setQuery(q);
 
   qLog(Debug) << "Fetching artist:" << search_url;
 

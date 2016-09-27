@@ -55,8 +55,10 @@ void SongkickConcerts::FetchInfo(int id, const Song& metadata) {
   }
 
   QUrl url(kSongkickArtistSearchUrl);
-  url.addQueryItem("apikey", kSongkickApiKey);
-  url.addQueryItem("query", metadata.artist());
+  QUrlQuery q;
+  q.addQueryItem("apikey", kSongkickApiKey);
+  q.addQueryItem("query", metadata.artist());
+  url.setQuery(q);
 
   QNetworkRequest request(url);
   QNetworkReply* reply = network_.get(request);
@@ -87,8 +89,10 @@ void SongkickConcerts::ArtistSearchFinished(QNetworkReply* reply, int id) {
 
 void SongkickConcerts::FetchSongkickCalendar(const QString& artist_id, int id) {
   QUrl url(QString(kSongkickArtistCalendarUrl).arg(artist_id));
-  url.addQueryItem("per_page", "5");
-  url.addQueryItem("apikey", kSongkickApiKey);
+  QUrlQuery q;
+  q.addQueryItem("per_page", "5");
+  q.addQueryItem("apikey", kSongkickApiKey);
+  url.setQuery(q);
   qLog(Debug) << url;
   QNetworkReply* reply = network_.get(QNetworkRequest(url));
   NewClosure(reply, SIGNAL(finished()), this,
