@@ -17,6 +17,7 @@ if(WIN32)
 endif(WIN32)
 
 # Activate fast QString concatenation
+add_definitions(-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 add_definitions(-DQT_USE_QSTRINGBUILDER)
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 add_definitions(-DBOOST_BIND_NO_PLACEHOLDERS)
@@ -902,7 +903,7 @@ if(HAVE_DBUS)
       dbus/org.mpris.MediaPlayer2.Playlists.xml
       core/mpris2.h mpris::Mpris2 core/mpris2_playlists Mpris2Playlists)
 
-  qt4_add_dbus_interface(SOURCES
+  qt5_add_dbus_interface(SOURCES
       dbus/org.mpris.MediaPlayer2.Player.xml
       dbus/mpris2)
 
@@ -969,19 +970,19 @@ if(HAVE_DBUS)
           PROPERTIES NO_NAMESPACE dbus/udisks2drive INCLUDE dbus/metatypes.h)
       set_source_files_properties(dbus/org.freedesktop.UDisks2.Job.xml
           PROPERTIES NO_NAMESPACE dbus/udisks2job INCLUDE dbus/metatypes.h)
-      qt4_add_dbus_interface(SOURCES
+      qt5_add_dbus_interface(SOURCES
           dbus/org.freedesktop.DBus.ObjectManager.xml
           dbus/objectmanager)
-      qt4_add_dbus_interface(SOURCES
+      qt5_add_dbus_interface(SOURCES
           dbus/org.freedesktop.UDisks2.Filesystem.xml
           dbus/udisks2filesystem)
-      qt4_add_dbus_interface(SOURCES
+      qt5_add_dbus_interface(SOURCES
           dbus/org.freedesktop.UDisks2.Block.xml
           dbus/udisks2block)
-      qt4_add_dbus_interface(SOURCES
+      qt5_add_dbus_interface(SOURCES
           dbus/org.freedesktop.UDisks2.Drive.xml
           dbus/udisks2drive)
-      qt4_add_dbus_interface(SOURCES
+      qt5_add_dbus_interface(SOURCES
           dbus/org.freedesktop.UDisks2.Job.xml
           dbus/udisks2job)
   endif(HAVE_UDISKS2)
