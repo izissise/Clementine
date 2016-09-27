@@ -65,11 +65,11 @@ InternetService::InternetService(const QString& name, Application* app,
         return action;
       }),
       copy_selected_playable_item_url_([&]() {
-            QAction* action = new QAction(IconLoader::Load("edit-copy", IconLoader::Base),
-                        tr("Copy URL to clipboard"), nullptr);
-            connect(copy_selected_playable_item_url_, SIGNAL(triggered()), this, SLOT(CopySelectedPlayableItemURL()));
-          }
-        }),
+        QAction* action = new QAction(IconLoader::Load("edit-copy", IconLoader::Base),
+                tr("Copy URL to clipboard"), nullptr);
+        connect(action, SIGNAL(triggered()), this, SLOT(CopySelectedPlayableItemURL()));
+        return action;
+      }),
       separator_([]() {
         QAction* action = new QAction(nullptr);
         action->setSeparator(true);

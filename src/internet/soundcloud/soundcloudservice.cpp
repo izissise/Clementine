@@ -384,15 +384,6 @@ void SoundCloudService::EnsureMenuCreated() {
     context_menu_->addAction(IconLoader::Load("configure", IconLoader::Base),
                              tr("Configure SoundCloud..."),
                              this, SLOT(ShowConfig()));
-    song_context_menu_ = new QMenu;
-    song_context_menu_->addActions(GetPlaylistActions());
-    song_context_menu_->addSeparator();
-    song_context_menu_->addAction(IconLoader::Load("download", IconLoader::Base),
-                                  tr("Open %1 in browser").arg("soundcloud.com"),
-                                  this, SLOT(Homepage()));
-    song_context_menu_->addAction(IconLoader::Load("edit-copy", IconLoader::Base),
-                                  tr("Copy track URL to clipboard"),
-                                  this, SLOT(GetSelectedSongUrl()));
   }
 }
 
