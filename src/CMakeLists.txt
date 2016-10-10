@@ -30,7 +30,6 @@ include_directories(${LIBPROJECTM_INCLUDE_DIRS})
 include_directories(${QTSINGLEAPPLICATION_INCLUDE_DIRS})
 include_directories(${QTIOCOMPRESSOR_INCLUDE_DIRS})
 include_directories(${QXT_INCLUDE_DIRS})
-
 include_directories(${SHA2_INCLUDE_DIRS})
 include_directories(${CHROMAPRINT_INCLUDE_DIRS})
 include_directories(${MYGPOQT5_INCLUDE_DIRS})

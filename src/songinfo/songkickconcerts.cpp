@@ -23,8 +23,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-
-#include <qjson/parser.h>
+#include <QUrl>
+#include <QUrlQuery>
 
 #include "core/closure.h"
 #include "core/logging.h"
@@ -55,10 +55,10 @@ void SongkickConcerts::FetchInfo(int id, const Song& metadata) {
   }
 
   QUrl url(kSongkickArtistSearchUrl);
-  QUrlQuery q;
-  q.addQueryItem("apikey", kSongkickApiKey);
-  q.addQueryItem("query", metadata.artist());
-  url.setQuery(q);
+  QUrlQuery url_query;
+  url_query.addQueryItem("apikey", kSongkickApiKey);
+  url_query.addQueryItem("query", metadata.artist());
+  url.setQuery(url_query);
 
   QNetworkRequest request(url);
   QNetworkReply* reply = network_.get(request);
@@ -69,19 +69,19 @@ void SongkickConcerts::FetchInfo(int id, const Song& metadata) {
 void SongkickConcerts::ArtistSearchFinished(QNetworkReply* reply, int id) {
   reply->deleteLater();
 
-  QString string = reply->readAll();
-  QVariantMap json = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
+  QJsonDocument document = QJsonDocument::fromBinaryData(reply->readAll());
+  QJsonObject json = document.object();
 
-  QVariantMap results_page = json["resultsPage"].toMap();
-  QVariantMap results = results_page["results"].toMap();
-  QVariantList artists = results["artist"].toList();
+  QJsonObject results_page = json["resultsPage"].toObject();
+  QJsonObject results = results_page["results"].toObject();
+  QJsonArray artists = results["artist"].toArray();
 
   if (artists.isEmpty()) {
     emit Finished(id);
     return;
   }
 
-  QVariantMap artist = artists.first().toMap();
+  QJsonObject artist = artists.first().toObject();
   QString artist_id = artist["id"].toString();
 
   FetchSongkickCalendar(artist_id, id);
@@ -89,10 +89,10 @@ void SongkickConcerts::ArtistSearchFinished(QNetworkReply* reply, int id) {
 
 void SongkickConcerts::FetchSongkickCalendar(const QString& artist_id, int id) {
   QUrl url(QString(kSongkickArtistCalendarUrl).arg(artist_id));
-  QUrlQuery q;
-  q.addQueryItem("per_page", "5");
-  q.addQueryItem("apikey", kSongkickApiKey);
-  url.setQuery(q);
+  QUrlQuery url_query;
+  url_query.addQueryItem("per_page", "5");
+  url_query.addQueryItem("apikey", kSongkickApiKey);
+  url.setQuery(url_query);
   qLog(Debug) << url;
   QNetworkReply* reply = network_.get(QNetworkRequest(url));
   NewClosure(reply, SIGNAL(finished()), this,

@@ -2,10 +2,12 @@
 
 #include <algorithm>
 
+#include <QPair>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-
-#include <QPair>
+#include <QUrl>
+#include <QUrlQuery>
 
 #include "core/closure.h"
 #include "core/logging.h"
@@ -34,11 +36,11 @@ void SpotifyImages::FetchInfo(int id, const Song& metadata) {
 
   // Fetch artist id.
   QUrl search_url(kSpotifySearchUrl);
-  QUrlQuery q;
-  q.addQueryItem("q", metadata.artist());
-  q.addQueryItem("type", "artist");
-  q.addQueryItem("limit", "1");
-  search_url.setQuery(q);
+  QUrlQuery search_url_query;
+  search_url_query.addQueryItem("q", metadata.artist());
+  search_url_query.addQueryItem("type", "artist");
+  search_url_query.addQueryItem("limit", "1");
+  search_url.setQuery(search_url_query);
 
   qLog(Debug) << "Fetching artist:" << search_url;
 
@@ -46,19 +48,19 @@ void SpotifyImages::FetchInfo(int id, const Song& metadata) {
   QNetworkReply* reply = network_->get(request);
   NewClosure(reply, SIGNAL(finished()), [this, id, reply]() {
     reply->deleteLater();
-    QString string = reply->readAll();
-    QVariantMap result = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
-    QVariantMap artists = result["artists"].toMap();
+    QJsonDocument json_document = QJsonDocument::fromJson(reply->readAll());
+    QJsonObject result = json_document.object();
+    QJsonObject artists = result["artists"].toObject();
     if (artists.isEmpty()) {
       emit Finished(id);
       return;
     }
-    QVariantList items = artists["items"].toList();
+    QJsonArray items = artists["items"].toArray();
     if (items.isEmpty()) {
       emit Finished(id);
       return;
     }
-    QVariantMap artist = items.first().toMap();
+    QJsonObject artist = items.first().toObject();
     QString spotify_uri = artist["uri"].toString();
 
     FetchImagesForArtist(id, ExtractSpotifyId(spotify_uri));
@@ -72,15 +74,15 @@ void SpotifyImages::FetchImagesForArtist(int id, const QString& spotify_id) {
   QNetworkReply* reply = network_->get(request);
   NewClosure(reply, SIGNAL(finished()), [this, id, reply]() {
     reply->deleteLater();
-    QString string = reply->readAll();
-    QVariantMap result = (QJsonDocument::fromJson(string.toUtf8())).object().toVariantMap();
-    QVariantList images = result["images"].toList();
+    QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+    QJsonObject result = document.object();
+    QJsonArray images = result["images"].toArray();
     QList<QPair<QUrl, QSize>> image_candidates;
-    for (QVariant i : images) {
-      QVariantMap image = i.toMap();
+    for (const QJsonValue& i : images) {
+      QJsonObject image = i.toObject();
       int height = image["height"].toInt();
       int width = image["width"].toInt();
-      QUrl url = image["url"].toUrl();
+      QUrl url = image["url"].toVariant().toUrl();
       image_candidates.append(qMakePair(url, QSize(width, height)));
     }
     if (!image_candidates.isEmpty()) {
